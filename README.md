@@ -72,10 +72,10 @@ $ make test
 $ make cover
 ```
 
-[badge_build]:https://github.com/tarampampam/mikrotik-hosts-parser/workflows/build/badge.svg
+[badge_build]:https://github.com/avtocod/golang-developer-test-task/workflows/build/badge.svg
 [badge_language]:https://img.shields.io/badge/language-go_1.13-blue.svg?longCache=true
 [badge_use_template]:https://img.shields.io/badge/start-this_template_using-success.svg?longCache=true
-[link_build]:https://github.com/tarampampam/mikrotik-hosts-parser/actions
+[link_build]:https://github.com/avtocod/golang-developer-test-task/actions
 [dataset_link]:https://data.gov.ru/opendata/7704786030-taxiparking
 [prometheus_format]:https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md
 [use_this_repo_template]:https://github.com/avtocod/golang-developer-test-task/generate
