@@ -46,7 +46,7 @@ run: ## Run app without building binary file
 shell: ## Start shell into container with golang
 	$(DC_BIN) run $(DC_RUN_ARGS) bash
 
-redis-cli: ## Start redi-cli
+redis-cli: ## Start redis-cli
 	$(DC_BIN) run --rm redis redis-cli -h redis -p 6379 \
 		|| printf "\n   \e[1;41m %s \033[0m\n\n" "Probably you need to run \`docker-compose up -d\` before.";
 
