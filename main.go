@@ -2,15 +2,20 @@ package main
 
 import (
 	"context"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"github.com/go-redis/redis/v9"
 	"go.uber.org/zap"
 	"golang-developer-test-task/infrastructure/redis_db"
 	"golang-developer-test-task/infrastructure/structs"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 )
 
 // https://stackoverflow.com/questions/11692860/how-can-i-efficiently-download-a-large-file-using-go
@@ -88,7 +93,29 @@ func main() {
 
 	dbLogic := DBProcessor{client: client}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/load_file", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		crutime := time.Now().Unix()
+		h := md5.New()
+		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		token := fmt.Sprintf("%x", h.Sum(nil))
+		t, _ := template.ParseFiles("static/index.tmpl")
+		t.Execute(w, token)
+	})
+
+	mux.HandleFunc("/api/load_file", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		//err := r.ParseMultipartForm(32 << 20)
+		//if err != nil {
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	return
+		//}
 		err := ProcessFileFromRequest(r, "uploadFile", dbLogic.ProcessJSONs)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -96,7 +123,7 @@ func main() {
 		}
 	})
 
-	mux.HandleFunc("/load_from_url", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/load_from_url", func(w http.ResponseWriter, r *http.Request) {
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -120,11 +147,11 @@ func main() {
 		}
 	})
 
-	//mux.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
+	//mux.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
 	//
 	//})
 	//
-	//mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+	//mux.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
 	//
 	//})
 
