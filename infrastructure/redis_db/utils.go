@@ -3,7 +3,7 @@ package redis_db
 import (
 	"context"
 	"github.com/go-redis/redis/v9"
-	"golang-developer-test-task/infrastructure/structs"
+	"golang-developer-test-task/structs"
 )
 
 func AddValueToSortedSet(ctx context.Context, client *redis.Client, value, collection string, score float64) (err error) {
@@ -11,9 +11,9 @@ func AddValueToSortedSet(ctx context.Context, client *redis.Client, value, colle
 	return err
 }
 
-func AddValue(ctx context.Context, client *redis.Client, info structs.Info) (err error) {
+func AddValue(ctx context.Context, client *redis.Client, info structs.Info, bs []byte) (err error) {
 	//err = client.ZAdd(ctx, collection, redis.Z{Score: score, Member: value}).Err()
-	err = client.Set(ctx, info.SystemObjectID, info, 0).Err()
+	err = client.Set(ctx, info.SystemObjectID, bs, 0).Err()
 	return err
 }
 
