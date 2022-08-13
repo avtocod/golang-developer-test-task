@@ -1,3 +1,4 @@
-module app
+module golang-developer-test-task
 
-go 1.14
+go 1.18
+
