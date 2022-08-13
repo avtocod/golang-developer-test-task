@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v9"
+	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 	"golang-developer-test-task/infrastructure/redis_db"
-	"golang-developer-test-task/infrastructure/structs"
+	"golang-developer-test-task/structs"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -20,29 +21,42 @@ import (
 
 // https://stackoverflow.com/questions/11692860/how-can-i-efficiently-download-a-large-file-using-go
 type (
-	JsonObjectsProcessorFunc func(context.Context, io.Reader) error
+	JsonObjectsProcessorFunc func(io.Reader) error
 
 	DBProcessor struct {
 		client *redis.Client
+		logger *zap.Logger
 	}
 )
 
-func (f *DBProcessor) ProcessJSONs(ctx context.Context, reader io.Reader) (err error) {
-	dec := json.NewDecoder(reader)
-	for dec.More() {
-		var info structs.Info
-		err = dec.Decode(&info)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
+func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
+	bs, err := ioutil.ReadAll(reader)
+	if err != nil {
+		f.logger.Error("error inside ProcessJSONs during ReadAll",
+			zap.Error(err))
+		return err
+	}
+	var infoList structs.InfoList
+	err = easyjson.Unmarshal(bs, &infoList)
+	if err != nil {
+		f.logger.Error("error inside ProcessJSONs during Unmarshal",
+			zap.Error(err))
+		return err
+	}
+	for _, info := range infoList {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
 		go func(info structs.Info) {
-			err := redis_db.AddValue(ctx, f.client, info)
+			bs, err := easyjson.Marshal(info)
 			if err != nil {
+				f.logger.Error("error inside ProcessJSONs' goroutine during Marshal",
+					zap.Error(err))
+				return
+			}
+			err = redis_db.AddValue(context.TODO(), f.client, info, bs)
+			if err != nil {
+				f.logger.Error("error inside ProcessJSONs' goroutine during adding value",
+					zap.Error(err))
 				return
 			}
 		}(info)
@@ -50,23 +64,27 @@ func (f *DBProcessor) ProcessJSONs(ctx context.Context, reader io.Reader) (err e
 	return nil
 }
 
-func ProcessFileFromURL(ctx context.Context, url string, processor JsonObjectsProcessorFunc) (err error) {
+func (f *DBProcessor) ProcessFileFromURL(url string, processor JsonObjectsProcessorFunc) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
+		f.logger.Error("error inside ProcessFileFromURL",
+			zap.Error(err))
 		return err
 	}
 	defer resp.Body.Close()
-	err = processor(ctx, resp.Body)
+	err = processor(resp.Body)
 	return err
 }
 
-func ProcessFileFromRequest(r *http.Request, fileName string, processor JsonObjectsProcessorFunc) (err error) {
+func (f *DBProcessor) ProcessFileFromRequest(r *http.Request, fileName string, processor JsonObjectsProcessorFunc) (err error) {
 	file, _, err := r.FormFile(fileName)
 	if err != nil {
+		f.logger.Error("error inside ProcessFileFromRequest",
+			zap.Error(err))
 		return err
 	}
 	defer file.Close()
-	err = processor(r.Context(), file)
+	err = processor(file)
 	return err
 }
 
@@ -91,32 +109,20 @@ func main() {
 	client := redis_db.RedisConnect(ctx, conf)
 	defer client.Close()
 
-	dbLogic := DBProcessor{client: client}
+	dbLogic := DBProcessor{client: client, logger: logger}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		crutime := time.Now().Unix()
-		h := md5.New()
-		io.WriteString(h, strconv.FormatInt(crutime, 10))
-		token := fmt.Sprintf("%x", h.Sum(nil))
-		t, _ := template.ParseFiles("static/index.tmpl")
-		t.Execute(w, token)
-	})
 
 	mux.HandleFunc("/api/load_file", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		//err := r.ParseMultipartForm(32 << 20)
-		//if err != nil {
-		//	w.WriteHeader(http.StatusInternalServerError)
-		//	return
-		//}
-		err := ProcessFileFromRequest(r, "uploadFile", dbLogic.ProcessJSONs)
+		err := r.ParseMultipartForm(32 << 20)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		err = dbLogic.ProcessFileFromRequest(r, "uploadFile", dbLogic.ProcessJSONs)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -140,7 +146,7 @@ func main() {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = ProcessFileFromURL(r.Context(), urlObj.URL, dbLogic.ProcessJSONs)
+		err = dbLogic.ProcessFileFromURL(urlObj.URL, dbLogic.ProcessJSONs)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -154,6 +160,19 @@ func main() {
 	//mux.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
 	//
 	//})
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		crutime := time.Now().Unix()
+		h := md5.New()
+		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		token := fmt.Sprintf("%x", h.Sum(nil))
+		t, _ := template.ParseFiles("static/index.tmpl")
+		t.Execute(w, token)
+	})
 
 	//mux := DBProcessor{}
 	http.ListenAndServe(":"+port, mux)

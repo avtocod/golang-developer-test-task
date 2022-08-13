@@ -22,3 +22,6 @@ type Info struct {
 	CarCapacityEn    int    `json:"CarCapacity_en"`
 	ModeEn           string `json:"Mode_en"`
 }
+
+//easyjson:json
+type InfoList []Info
