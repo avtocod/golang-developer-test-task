@@ -117,7 +117,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer logger.Sync()
+	defer func() {
+		err = logger.Sync()
+	}()
 
 	ctx := context.TODO()
 	conf := redis_db.RedisConfig{}
