@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"golang-developer-test-task/infrastructure/redis_db"
 	"golang-developer-test-task/structs"
+	"golang.org/x/text/encoding/charmap"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -36,24 +37,22 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 			zap.Error(err))
 		return err
 	}
+	dec := charmap.Windows1251.NewDecoder()
+	out, err := dec.Bytes(bs)
 	var infoList structs.InfoList
-	err = easyjson.Unmarshal(bs, &infoList)
+	err = easyjson.Unmarshal(out, &infoList)
 	if err != nil {
 		f.logger.Error("error inside ProcessJSONs during Unmarshal",
 			zap.Error(err))
 		return err
 	}
+	//fmt.Println("INFOLIST", infoList)
+	//fmt.Println()
 	for _, info := range infoList {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
 		go func(info structs.Info) {
-			bs, err := easyjson.Marshal(info)
-			if err != nil {
-				f.logger.Error("error inside ProcessJSONs' goroutine during Marshal",
-					zap.Error(err))
-				return
-			}
-			err = redis_db.AddValue(context.TODO(), f.client, info, bs)
+			err = redis_db.AddValue(context.TODO(), f.client, info)
 			if err != nil {
 				f.logger.Error("error inside ProcessJSONs' goroutine during adding value",
 					zap.Error(err))
@@ -92,6 +91,25 @@ type URLObject struct {
 	URL string `json:"url"`
 }
 
+type SearchObject struct {
+	GlobalID       *int    `json:"global_id,omitempty"`
+	SystemObjectID *string `json:"system_object_id,omitempty"`
+	ID             *int    `json:"id,omitempty"`
+	Mode           *string `json:"mode,omitempty"`
+	IDEn           *int    `json:"id_en,omitempty"`
+	ModeEn         *string `json:"mode_en,omitempty"`
+	Offset         int     `json:"offset"`
+}
+
+type PaginationObject struct {
+	Size        int              `json:"size"`
+	Offset      int              `json:"offset"`
+	HasNext     bool             `json:"hasNext"`
+	HasPrevious bool             `json:"hasPrevious"`
+	Data        structs.InfoList `json:"data"`
+	//Data []string `json:"data"`
+}
+
 func main() {
 	port := "3000"
 
@@ -101,7 +119,6 @@ func main() {
 	}
 	defer logger.Sync()
 
-	// write your code
 	ctx := context.TODO()
 	conf := redis_db.RedisConfig{}
 	conf.Load()
@@ -153,10 +170,100 @@ func main() {
 		}
 	})
 
-	//mux.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
-	//
-	//})
-	//
+	//https://nimblehq.co/blog/getting-started-with-redisearch
+	mux.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
+		//var bs1 []byte
+		//bs1, err := ioutil.ReadAll(r.Body)
+		//if err != nil {
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	return
+		//}
+		//defer r.Body.Close()
+		var searchObj SearchObject
+		//err = json.Unmarshal(bs1, &searchObj)
+		//if err != nil {
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	return
+		//}
+
+		//ctx := context.TODO()
+		ctx := r.Context()
+		searchStr := ""
+		multiple := false
+		// TODO
+		a := "1704691"
+		//a := ""
+		searchObj.SystemObjectID = &a
+
+		if searchObj.SystemObjectID != nil {
+			searchStr = *searchObj.SystemObjectID
+		} else if searchObj.GlobalID != nil {
+			// TODO: add global_id: and additional queries
+			searchStr = strconv.Itoa(*searchObj.GlobalID)
+		} else if searchObj.ID != nil {
+			searchStr = strconv.Itoa(*searchObj.ID)
+		} else if searchObj.IDEn != nil {
+			searchStr = strconv.Itoa(*searchObj.IDEn)
+		} else if searchObj.Mode != nil {
+			searchStr = *searchObj.Mode
+			multiple = true
+		} else if searchObj.ModeEn != nil {
+			searchStr = *searchObj.ModeEn
+			multiple = true
+		}
+
+		var v string
+		paginationObj := PaginationObject{}
+		paginationObj.Data = make(structs.InfoList, 0)
+		if !multiple {
+			v, err = client.Get(ctx, searchStr).Result()
+			if err != redis.Nil {
+				paginationObj.Size = 1
+				var info structs.Info
+				err = easyjson.Unmarshal([]byte(v), &info)
+				paginationObj.Data = append(paginationObj.Data, info)
+			}
+		} else {
+			paginationSize := 5
+			var start, end int64
+			start = int64(searchObj.Offset)
+			end = int64(searchObj.Offset + paginationSize)
+			var vs []string
+			vs, err = client.LRange(ctx, searchStr, start, end).Result()
+			size, _ := client.LLen(ctx, searchStr).Result()
+			paginationObj.Size = int(size)
+			data := make(structs.InfoList, len(vs))
+			for _, v := range vs {
+				var info structs.Info
+				err = easyjson.Unmarshal([]byte(v), &info)
+			}
+			paginationObj.Data = data
+		}
+		//v, err := client.Get(ctx, "1704691").Result()
+		//v, err := client.Get(ctx, "id:161").Result()
+		//vs, err := client.LRange(ctx, "mode:круглосуточно", 0, -1).Result()
+		//logger.Info("inside `api/search` during getting data from Redis",
+		//	zap.String("val", fmt.Sprintf("%v", vs)))
+		//v, err := client.Get(ctx, vs[0]).Result()
+		//logger.Info("inside `api/search` during getting data from Redis",
+		//	zap.String("val", fmt.Sprintf("%v", v)))
+		//if err != redis.Nil {
+		//	logger.Error("error inside `api/search` during getting data from Redis",
+		//		zap.Error(err))
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//}
+		//var bs []byte
+		//bs = v.([]byte)
+		//bs1 = []byte(v)
+		bs, err := json.Marshal(paginationObj)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json; charset=windows-1251")
+		w.Write(bs)
+	})
+
 	//mux.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
 	//
 	//})

@@ -1,10 +1,5 @@
 package redis_db
 
-import (
-	"os"
-	"strconv"
-)
-
 //var Config RedisConfig
 
 type RedisConfig struct {
@@ -14,11 +9,14 @@ type RedisConfig struct {
 }
 
 func (r *RedisConfig) Load() {
-	r.Addr = os.Getenv("Addr")
-	r.Password = os.Getenv("Password")
-	DB, err := strconv.ParseInt(os.Getenv("DB"), 10, 32)
-	if err != nil {
-		panic(err)
-	}
-	r.DB = int(DB)
+	r.Addr = "localhost:6379"
+	r.Password = ""
+	//r.Addr = os.Getenv("Addr")
+	//r.Password = os.Getenv("Password")
+	//DB, err := strconv.ParseInt(os.Getenv("DB"), 10, 32)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//r.DB = int(DB)
+	r.DB = 0
 }
