@@ -25,7 +25,7 @@ type (
 	JsonObjectsProcessorFunc func(io.Reader) error
 
 	DBProcessor struct {
-		client *redis.Client
+		client *redis_db.RedisClient
 		logger *zap.Logger
 	}
 )
@@ -52,7 +52,7 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
 		go func(info structs.Info) {
-			err = redis_db.AddValue(context.TODO(), f.client, info)
+			err = f.client.AddValue(context.Background(), info)
 			if err != nil {
 				f.logger.Error("error inside ProcessJSONs' goroutine during adding value",
 					zap.Error(err))

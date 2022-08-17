@@ -5,7 +5,11 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
-func RedisConnect(ctx context.Context, config RedisConfig) *redis.Client {
+type RedisClient struct {
+	redis.Client
+}
+
+func RedisConnect(ctx context.Context, config RedisConfig) *RedisClient {
 	options := redis.Options{
 		Addr:     config.Addr,
 		Password: config.Password,
@@ -16,5 +20,5 @@ func RedisConnect(ctx context.Context, config RedisConfig) *redis.Client {
 	if _, err := client.Ping(ctx).Result(); err != nil {
 		panic(err)
 	}
-	return client
+	return &RedisClient{*client}
 }
