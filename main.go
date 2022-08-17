@@ -261,7 +261,10 @@ func main() {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json; charset=windows-1251")
-		w.Write(bs)
+		_, err = w.Write(bs)
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	//mux.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
@@ -275,12 +278,22 @@ func main() {
 		}
 		crutime := time.Now().Unix()
 		h := md5.New()
-		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		_, err := io.WriteString(h, strconv.FormatInt(crutime, 10))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		token := fmt.Sprintf("%x", h.Sum(nil))
 		t, _ := template.ParseFiles("static/index.tmpl")
-		t.Execute(w, token)
+		err = t.Execute(w, token)
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	//mux := DBProcessor{}
-	http.ListenAndServe(":"+port, mux)
+	err = http.ListenAndServe(":"+port, mux)
+	if err != nil {
+		panic(err)
+	}
 }

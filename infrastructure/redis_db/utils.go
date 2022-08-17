@@ -9,6 +9,9 @@ import (
 
 func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err error) {
 	bs, err := easyjson.Marshal(info)
+	if err != nil {
+		return err
+	}
 	err = r.Set(ctx, info.SystemObjectID, bs, 0).Err()
 	if err != nil {
 		return err
