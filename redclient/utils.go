@@ -1,4 +1,4 @@
-package redis_db
+package redclient
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/mailru/easyjson"
 )
 
+// AddValue add info to Redis storage
 func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err error) {
 	bs, err := easyjson.Marshal(info)
 	if err != nil {

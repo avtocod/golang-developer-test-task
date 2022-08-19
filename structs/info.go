@@ -1,5 +1,6 @@
 package structs
 
+// Info is struct for information parsing from json
 type Info struct {
 	GlobalID         int    `json:"global_id"`
 	SystemObjectID   string `json:"system_object_id"`
@@ -23,5 +24,6 @@ type Info struct {
 	ModeEn           string `json:"Mode_en"`
 }
 
+// InfoList is alias for []Info
 //easyjson:json
 type InfoList []Info

@@ -1,4 +1,4 @@
-package redis_db
+package redclient
 
 import (
 	"context"
@@ -6,11 +6,13 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
+// RedisClient is for wrapping original redis.Client
 type RedisClient struct {
 	redis.Client
 }
 
-func RedisConnect(ctx context.Context, config RedisConfig) *RedisClient {
+// NewRedisClient is constructor for RedisClient
+func NewRedisClient(ctx context.Context, config RedisConfig) *RedisClient {
 	options := redis.Options{
 		Addr:     config.Addr,
 		Password: config.Password,
