@@ -5,18 +5,19 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v9"
-	"github.com/mailru/easyjson"
-	"go.uber.org/zap"
 	"golang-developer-test-task/infrastructure/redis_db"
 	"golang-developer-test-task/structs"
-	"golang.org/x/text/encoding/charmap"
 	"html/template"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/go-redis/redis/v9"
+	"github.com/mailru/easyjson"
+	"go.uber.org/zap"
+	"golang.org/x/text/encoding/charmap"
 )
 
 // https://stackoverflow.com/questions/11692860/how-can-i-efficiently-download-a-large-file-using-go

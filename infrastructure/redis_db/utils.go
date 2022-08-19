@@ -3,8 +3,9 @@ package redis_db
 import (
 	"context"
 	"fmt"
-	"github.com/mailru/easyjson"
 	"golang-developer-test-task/structs"
+
+	"github.com/mailru/easyjson"
 )
 
 func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err error) {
