@@ -25,4 +25,3 @@
 [dataset_link]:https://data.gov.ru/opendata/7704786030-taxiparking
 [prometheus_format]:https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md
 
-[//]: # ([use_this_repo_template]:https://github.com/avtocod/golang-developer-test-task/generate)
