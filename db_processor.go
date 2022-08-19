@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/mailru/easyjson"
-	"go.uber.org/zap"
 	"golang-developer-test-task/redclient"
 	"golang-developer-test-task/structs"
-	"golang.org/x/text/encoding/charmap"
 	"io"
 	"net/http"
+
+	"github.com/mailru/easyjson"
+	"go.uber.org/zap"
+	"golang.org/x/text/encoding/charmap"
 )
 
 type (

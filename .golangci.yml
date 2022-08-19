@@ -22,6 +22,7 @@ linters:
     - unused
     - varcheck
     - nilerr
+    - goimports
 
 issues:
   exclude-use-default: false
