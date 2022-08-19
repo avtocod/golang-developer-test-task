@@ -25,5 +25,6 @@ type Info struct {
 }
 
 // InfoList is alias for []Info
+//
 //easyjson:json
 type InfoList []Info
