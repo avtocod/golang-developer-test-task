@@ -13,7 +13,6 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -31,7 +30,7 @@ type (
 )
 
 func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
-	bs, err := ioutil.ReadAll(reader)
+	bs, err := io.ReadAll(reader)
 	if err != nil {
 		f.logger.Error("error inside ProcessJSONs during ReadAll",
 			zap.Error(err))
@@ -149,7 +148,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/api/load_from_url", func(w http.ResponseWriter, r *http.Request) {
-		bs, err := ioutil.ReadAll(r.Body)
+		bs, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -175,7 +174,7 @@ func main() {
 	//https://nimblehq.co/blog/getting-started-with-redisearch
 	mux.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
 		//var bs1 []byte
-		//bs1, err := ioutil.ReadAll(r.Body)
+		//bs1, err := io.ReadAll(r.Body)
 		//if err != nil {
 		//	w.WriteHeader(http.StatusInternalServerError)
 		//	return
