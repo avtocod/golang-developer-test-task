@@ -19,6 +19,7 @@ linters:
     - varcheck
     - nilerr
     - goimports
+    - gocognit
 
 issues:
   exclude-use-default: false
