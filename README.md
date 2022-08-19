@@ -6,7 +6,6 @@
 
 ![Project language][badge_language]
 [![Build Status][badge_build]][link_build]
-[![Do something awesome][badge_use_template]][use_this_repo_template]
 
 
 `/search`
