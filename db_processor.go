@@ -43,6 +43,11 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 	}
 	dec := charmap.Windows1251.NewDecoder()
 	out, err := dec.Bytes(bs)
+	if err != nil {
+		f.logger.Error("error inside ProcessJSONs during change encoding to cp1251",
+			zap.Error(err))
+		return err
+	}
 	var infoList structs.InfoList
 	err = easyjson.Unmarshal(out, &infoList)
 	if err != nil {
@@ -55,9 +60,9 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
 		go func(info structs.Info) {
-			err = f.client.AddValue(context.Background(), info)
+			err := f.client.AddValue(context.Background(), info)
 			if err != nil {
-				f.logger.Error("error inside ProcessJSONs' goroutine during adding value",
+				f.logger.Error("error inside ProcessJSONs in goroutine",
 					zap.Error(err))
 				return
 			}
