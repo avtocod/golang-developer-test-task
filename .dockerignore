@@ -3,6 +3,7 @@ Makefile
 docker*.yml
 *.log
 .gitignore
+.golangci.yml
 .editorconfig
 nbproject
 .idea
