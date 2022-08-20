@@ -27,6 +27,8 @@ linters:
     - unconvert
     - unparam
     - gocritic
+    - prealloc
+    - exportloopref
 
 issues:
   exclude-use-default: false
