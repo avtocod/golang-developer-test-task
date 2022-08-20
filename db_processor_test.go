@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/mailru/easyjson"
 	"golang-developer-test-task/redclient"
 	"golang-developer-test-task/structs"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/mailru/easyjson"
 
 	"github.com/go-redis/redismock/v8"
 	"go.uber.org/zap"
