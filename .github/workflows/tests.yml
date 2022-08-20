@@ -28,28 +28,6 @@ jobs:
         if: failure()
         run: gofmt -d -s .
 
-  goimports:
-    name: Run goimports
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
-
-      - name: Install goimports
-        run: go install golang.org/x/tools/cmd/goimports@latest
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Run goimports
-        run: test -z "$(set -o pipefail && $(go env GOPATH)/bin/goimports -l . | tee goimports.out)" || { cat goimports.out && exit 1; }
-
-      - name: Open this to see how to fix goimports if it fails
-        run: echo Run goimports -w .
-        if: failure()
-
   lint:
     name: Run linters
     runs-on: ubuntu-latest
