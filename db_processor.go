@@ -113,6 +113,10 @@ func (f *DBProcessor) HandleLoadFile(w http.ResponseWriter, r *http.Request) {
 
 // HandleLoadFromURL is handler for /api/load_from_url
 func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -137,6 +141,11 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 
 // HandleSearch is handler for /api/search
 func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	var searchObj structs.SearchObject
 
 	ctx := r.Context()
