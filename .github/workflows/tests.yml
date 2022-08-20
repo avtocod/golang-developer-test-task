@@ -68,7 +68,7 @@ jobs:
         with:
           api_key: ${{ secrets.FORESIGHT_APIKEY }}
           coverage_format: GOLANG
-          coverage_path: ./coverage.out
+          coverage_path: coverage.out
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
