@@ -222,9 +222,9 @@ func (f *DBProcessor) HandleMainPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	crutime := time.Now().Unix()
+	tmp := time.Now().Unix()
 	h := md5.New()
-	_, err := io.WriteString(h, strconv.FormatInt(crutime, 10))
+	_, err := io.WriteString(h, strconv.FormatInt(tmp, 10))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

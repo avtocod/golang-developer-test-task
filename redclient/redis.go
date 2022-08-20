@@ -3,7 +3,7 @@ package redclient
 import (
 	"context"
 
-	"github.com/go-redis/redis/v9"
+	"github.com/go-redis/redis/v8"
 )
 
 // RedisClient is for wrapping original redis.Client
