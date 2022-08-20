@@ -11,8 +11,6 @@ import (
 )
 
 func TestHandleMainPage(t *testing.T) {
-	t.Parallel()
-
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db}
 
@@ -33,8 +31,6 @@ func TestHandleMainPage(t *testing.T) {
 }
 
 func TestHandleMainPageBadRequest(t *testing.T) {
-	t.Parallel()
-
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db}
 

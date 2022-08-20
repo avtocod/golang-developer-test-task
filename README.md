@@ -6,7 +6,7 @@
 
 ![Project language][badge_language]
 [![Build Status][badge_build]][link_build]
-
+[![codecov](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task/branch/dev/graph/badge.svg?token=JJVKAZ8PWX)](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task)
 
 `/search`
 
