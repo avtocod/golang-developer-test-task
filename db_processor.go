@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"golang-developer-test-task/redclient"
 	"golang-developer-test-task/structs"
@@ -22,28 +21,6 @@ import (
 )
 
 type (
-	urlObject struct {
-		URL string `json:"url"`
-	}
-
-	searchObject struct {
-		GlobalID       *int    `json:"global_id,omitempty"`
-		SystemObjectID *string `json:"system_object_id,omitempty"`
-		ID             *int    `json:"id,omitempty"`
-		Mode           *string `json:"mode,omitempty"`
-		IDEn           *int    `json:"id_en,omitempty"`
-		ModeEn         *string `json:"mode_en,omitempty"`
-		Offset         int     `json:"offset"`
-	}
-
-	paginationObject struct {
-		Size        int              `json:"size"`
-		Offset      int              `json:"offset"`
-		HasNext     bool             `json:"hasNext"`
-		HasPrevious bool             `json:"hasPrevious"`
-		Data        structs.InfoList `json:"data"`
-	}
-
 	jsonObjectsProcessorFunc func(io.Reader) error
 
 	// DBProcessor needs for dependency injection
@@ -141,8 +118,8 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var urlObj urlObject
-	err = json.Unmarshal(bs, &urlObj)
+	var urlObj structs.URLObject
+	err = easyjson.Unmarshal(bs, &urlObj)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -160,7 +137,7 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 
 // HandleSearch is handler for /api/search
 func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
-	var searchObj searchObject
+	var searchObj structs.SearchObject
 
 	ctx := r.Context()
 	searchStr := ""
@@ -188,7 +165,7 @@ func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	var v string
 	var err error
-	paginationObj := paginationObject{}
+	paginationObj := structs.PaginationObject{}
 	paginationObj.Data = make(structs.InfoList, 0)
 	if !multiple {
 		v, err = f.client.Get(ctx, searchStr).Result()
@@ -227,7 +204,7 @@ func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		paginationObj.Data = data
 	}
 
-	bs, err := json.Marshal(paginationObj)
+	bs, err := easyjson.Marshal(paginationObj)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
