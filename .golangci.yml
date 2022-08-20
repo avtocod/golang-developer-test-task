@@ -20,6 +20,13 @@ linters:
     - nilerr
     - goimports
     - gocognit
+    - nakedret
+    - gochecknoinits
+    - goconst
+    - misspell
+    - unconvert
+    - unparam
+    - gocritic
 
 issues:
   exclude-use-default: false

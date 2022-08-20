@@ -19,7 +19,7 @@ func main() {
 		err = logger.Sync()
 	}()
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	conf := redclient.RedisConfig{}
 	conf.Load()
 
@@ -41,13 +41,8 @@ func main() {
 	//https://nimblehq.co/blog/getting-started-with-redisearch
 	mux.HandleFunc("/api/search", dbLogic.HandleSearch)
 
-	//mux.HandleFunc("/api/metrics", func(w http.ResponseWriter, r *http.Request) {
-	//
-	//})
-
 	mux.HandleFunc("/", dbLogic.HandleMainPage)
 
-	//mux := DBProcessor{}
 	err = http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		panic(err)

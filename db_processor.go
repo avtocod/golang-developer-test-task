@@ -21,30 +21,29 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-type urlObject struct {
-	URL string `json:"url"`
-}
-
-type searchObject struct {
-	GlobalID       *int    `json:"global_id,omitempty"`
-	SystemObjectID *string `json:"system_object_id,omitempty"`
-	ID             *int    `json:"id,omitempty"`
-	Mode           *string `json:"mode,omitempty"`
-	IDEn           *int    `json:"id_en,omitempty"`
-	ModeEn         *string `json:"mode_en,omitempty"`
-	Offset         int     `json:"offset"`
-}
-
-type paginationObject struct {
-	Size        int              `json:"size"`
-	Offset      int              `json:"offset"`
-	HasNext     bool             `json:"hasNext"`
-	HasPrevious bool             `json:"hasPrevious"`
-	Data        structs.InfoList `json:"data"`
-	//Data []string `json:"data"`
-}
-
 type (
+	urlObject struct {
+		URL string `json:"url"`
+	}
+
+	searchObject struct {
+		GlobalID       *int    `json:"global_id,omitempty"`
+		SystemObjectID *string `json:"system_object_id,omitempty"`
+		ID             *int    `json:"id,omitempty"`
+		Mode           *string `json:"mode,omitempty"`
+		IDEn           *int    `json:"id_en,omitempty"`
+		ModeEn         *string `json:"mode_en,omitempty"`
+		Offset         int     `json:"offset"`
+	}
+
+	paginationObject struct {
+		Size        int              `json:"size"`
+		Offset      int              `json:"offset"`
+		HasNext     bool             `json:"hasNext"`
+		HasPrevious bool             `json:"hasPrevious"`
+		Data        structs.InfoList `json:"data"`
+	}
+
 	jsonObjectsProcessorFunc func(io.Reader) error
 
 	// DBProcessor needs for dependency injection
@@ -71,8 +70,7 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 			zap.Error(err))
 		return err
 	}
-	//fmt.Println("INFOLIST", infoList)
-	//fmt.Println()
+
 	for _, info := range infoList {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
@@ -162,42 +160,28 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 
 // HandleSearch is handler for /api/search
 func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
-	//var bs1 []byte
-	//bs1, err := io.ReadAll(r.Body)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
-	//defer r.Body.Close()
 	var searchObj searchObject
-	//err = json.Unmarshal(bs1, &searchObj)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
 
-	//ctx := context.TODO()
 	ctx := r.Context()
 	searchStr := ""
 	multiple := false
 	// TODO
 	a := "1704691"
-	//a := ""
 	searchObj.SystemObjectID = &a
 
-	if searchObj.SystemObjectID != nil {
+	switch {
+	case searchObj.SystemObjectID != nil:
 		searchStr = *searchObj.SystemObjectID
-	} else if searchObj.GlobalID != nil {
-		// TODO: add global_id: and additional queries
+	case searchObj.GlobalID != nil:
 		searchStr = strconv.Itoa(*searchObj.GlobalID)
-	} else if searchObj.ID != nil {
+	case searchObj.ID != nil:
 		searchStr = strconv.Itoa(*searchObj.ID)
-	} else if searchObj.IDEn != nil {
+	case searchObj.IDEn != nil:
 		searchStr = strconv.Itoa(*searchObj.IDEn)
-	} else if searchObj.Mode != nil {
+	case searchObj.Mode != nil:
 		searchStr = *searchObj.Mode
 		multiple = true
-	} else if searchObj.ModeEn != nil {
+	case searchObj.ModeEn != nil:
 		searchStr = *searchObj.ModeEn
 		multiple = true
 	}
@@ -242,22 +226,7 @@ func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		}
 		paginationObj.Data = data
 	}
-	//v, err := client.Get(ctx, "1704691").Result()
-	//v, err := client.Get(ctx, "id:161").Result()
-	//vs, err := client.LRange(ctx, "mode:круглосуточно", 0, -1).Result()
-	//logger.Info("inside `api/search` during getting data from Redis",
-	//	zap.String("val", fmt.Sprintf("%v", vs)))
-	//v, err := client.Get(ctx, vs[0]).Result()
-	//logger.Info("inside `api/search` during getting data from Redis",
-	//	zap.String("val", fmt.Sprintf("%v", v)))
-	//if err != redis.Nil {
-	//	logger.Error("error inside `api/search` during getting data from Redis",
-	//		zap.Error(err))
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//}
-	//var bs []byte
-	//bs = v.([]byte)
-	//bs1 = []byte(v)
+
 	bs, err := json.Marshal(paginationObj)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
