@@ -28,6 +28,9 @@ type (
 		client *redclient.RedisClient
 		logger *zap.Logger
 	}
+
+	// Handler is type for handler function
+	Handler func(http.ResponseWriter, *http.Request)
 )
 
 // ProcessJSONs read jsons from reader and write it to Redis client
@@ -63,6 +66,17 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 	return nil
 }
 
+// CheckHandlerRequestMethod is a function to return wrapped handler
+func (f *DBProcessor) CheckHandlerRequestMethod(handler Handler, validMethod string) Handler {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != validMethod {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		handler(w, r)
+	}
+}
+
 // ProcessFileFromURL handle json file from URL
 func (f *DBProcessor) ProcessFileFromURL(url string, processor jsonObjectsProcessorFunc) (err error) {
 	resp, err := http.Get(url)
@@ -95,10 +109,6 @@ func (f *DBProcessor) ProcessFileFromRequest(r *http.Request, fileName string, p
 
 // HandleLoadFile is handler for /api/load_file
 func (f *DBProcessor) HandleLoadFile(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -113,10 +123,6 @@ func (f *DBProcessor) HandleLoadFile(w http.ResponseWriter, r *http.Request) {
 
 // HandleLoadFromURL is handler for /api/load_from_url
 func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -141,11 +147,6 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 
 // HandleSearch is handler for /api/search
 func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	var searchObj structs.SearchObject
 
 	ctx := r.Context()
@@ -227,10 +228,6 @@ func (f *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 // HandleMainPage is handler for main page
 func (f *DBProcessor) HandleMainPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	tmp := time.Now().Unix()
 	h := md5.New()
 	_, err := io.WriteString(h, strconv.FormatInt(tmp, 10))

@@ -23,7 +23,9 @@ func TestHandleMainPage(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/", nil)
 	res := httptest.NewRecorder()
-	processor.HandleMainPage(res, req)
+	// processor.HandleMainPage(res, req)
+	h := processor.CheckHandlerRequestMethod(processor.HandleMainPage, "GET")
+	h(res, req)
 
 	if res.Code != http.StatusOK {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusOK)
@@ -43,7 +45,9 @@ func TestHandleMainPageBadRequest(t *testing.T) {
 
 	req := httptest.NewRequest("POST", "/", nil)
 	res := httptest.NewRecorder()
-	processor.HandleMainPage(res, req)
+	// processor.HandleMainPage(res, req)
+	h := processor.CheckHandlerRequestMethod(processor.HandleMainPage, "GET")
+	h(res, req)
 
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
@@ -63,7 +67,9 @@ func TestHandleSearchBadRequest(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/api/search", nil)
 	res := httptest.NewRecorder()
-	processor.HandleSearch(res, req)
+	// processor.HandleSearch(res, req)
+	h := processor.CheckHandlerRequestMethod(processor.HandleSearch, "POST")
+	h(res, req)
 
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
@@ -83,7 +89,9 @@ func TestHandleLoadFromURLBadRequest(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/api/load_from_url", nil)
 	res := httptest.NewRecorder()
-	processor.HandleLoadFromURL(res, req)
+	// processor.HandleLoadFromURL(res, req)
+	h := processor.CheckHandlerRequestMethod(processor.HandleLoadFromURL, "POST")
+	h(res, req)
 
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
@@ -103,7 +111,9 @@ func TestHandleLoadFileBadRequest(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/api/load_file", nil)
 	res := httptest.NewRecorder()
-	processor.HandleLoadFile(res, req)
+	// processor.HandleLoadFile(res, req)
+	h := processor.CheckHandlerRequestMethod(processor.HandleLoadFile, "POST")
+	h(res, req)
 
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
