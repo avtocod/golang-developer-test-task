@@ -68,6 +68,7 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 
 // CheckHandlerRequestMethod is a function to return wrapped handler
 func (f *DBProcessor) CheckHandlerRequestMethod(handler Handler, validMethod string) Handler {
+	// TODO: make this method private, make unwrapped handlers private
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != validMethod {
 			w.WriteHeader(http.StatusBadRequest)
