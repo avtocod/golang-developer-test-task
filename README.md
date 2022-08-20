@@ -8,6 +8,7 @@
 [![Build Status][badge_build]][link_build]
 [![codecov](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task/branch/dev/graph/badge.svg?token=JJVKAZ8PWX)](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/nizhikebinesi/golang-developer-test-task)](https://www.tickgit.com/browse?repo=github.com/nizhikebinesi/golang-developer-test-task/branch/dev)
+[![Twitter Follow](https://img.shields.io/twitter/follow/nizhikebinesi)](https://twitter.com/nizhikebinesi)
 
 `/search`
 
