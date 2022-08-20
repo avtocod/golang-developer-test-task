@@ -31,3 +31,25 @@ func TestHandleMainPage(t *testing.T) {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusOK)
 	}
 }
+
+func TestHandleMainPageBadRequest(t *testing.T) {
+	t.Parallel()
+
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := DBProcessor{client: client, logger: logger}
+
+	req := httptest.NewRequest("POST", "/", nil)
+	res := httptest.NewRecorder()
+	processor.HandleMainPage(res, req)
+
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusOK)
+	}
+}
