@@ -10,8 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-
-func TestHandleMainPage (t *testing.T) {
+func TestHandleMainPage(t *testing.T) {
 	t.Parallel()
 
 	db, _ := redismock.NewClientMock()
