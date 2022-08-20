@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"golang-developer-test-task/structs"
 
+	"testing"
+
 	"github.com/go-redis/redis/v9"
 	"github.com/go-redis/redismock/v8"
 	"github.com/mailru/easyjson"
-	"testing"
 )
 
 func TestAddValue(t *testing.T) {

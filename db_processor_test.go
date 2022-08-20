@@ -16,12 +16,9 @@ func TestHandleMainPage(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db}
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
+	logger, _ := zap.NewProduction()
 	defer func() {
-		err = logger.Sync()
+		_ = logger.Sync()
 	}()
 
 	processor := DBProcessor{client: client, logger: logger}
