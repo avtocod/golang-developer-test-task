@@ -8,23 +8,10 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/go-redis/redismock/v8"
 	"github.com/mailru/easyjson"
-	"github.com/ozontech/allure-go/pkg/framework/provider"
-	"github.com/ozontech/allure-go/pkg/framework/suite"
-
 	"testing"
 )
 
-type SuiteStruct struct {
-	suite.Suite
-}
-
-func (s *SuiteStruct) BeforeEach(t provider.T) {
-	t.Epic("Redclient tests")
-}
-
-func (s *SuiteStruct) TestAddValue(t provider.T) {
-	t.Parallel()
-
+func TestAddValue(t *testing.T) {
 	info := structs.Info{
 		GlobalID:       42,
 		SystemObjectID: "777",
@@ -49,8 +36,4 @@ func (s *SuiteStruct) TestAddValue(t provider.T) {
 	if err != redis.Nil {
 		t.Fatal(err)
 	}
-}
-
-func TestRun(t *testing.T) {
-	suite.RunSuite(t, new(SuiteStruct))
 }

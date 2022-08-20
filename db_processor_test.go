@@ -7,16 +7,11 @@ import (
 	"testing"
 
 	"github.com/go-redis/redismock/v8"
-	"github.com/ozontech/allure-go/pkg/framework/provider"
-	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"go.uber.org/zap"
 )
 
-type SuiteStruct struct {
-	suite.Suite
-}
 
-func (s *SuiteStruct) TestAddValue(t provider.T) {
+func TestHandleMainPage (t *testing.T) {
 	t.Parallel()
 
 	db, _ := redismock.NewClientMock()
@@ -39,8 +34,4 @@ func (s *SuiteStruct) TestAddValue(t provider.T) {
 	if res.Code != http.StatusOK {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusOK)
 	}
-}
-
-func TestRun(t *testing.T) {
-	suite.RunSuite(t, new(SuiteStruct))
 }
