@@ -3,12 +3,13 @@ package redclient
 import (
 	"context"
 	"fmt"
+	"golang-developer-test-task/structs"
+
 	"github.com/go-redis/redis/v9"
 	"github.com/go-redis/redismock/v8"
 	"github.com/mailru/easyjson"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
-	"golang-developer-test-task/structs"
 
 	"testing"
 )
