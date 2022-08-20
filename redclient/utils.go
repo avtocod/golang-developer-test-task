@@ -3,8 +3,9 @@ package redclient
 import (
 	"context"
 	"fmt"
-	"github.com/mailru/easyjson"
 	"golang-developer-test-task/structs"
+
+	"github.com/mailru/easyjson"
 )
 
 // AddValue add info to Redis storage
