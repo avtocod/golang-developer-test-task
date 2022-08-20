@@ -6,8 +6,8 @@
 
 ![Project language][badge_language]
 [![Build Status][badge_build]][link_build]
-[![codecov](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task/branch/dev/graph/badge.svg?token=JJVKAZ8PWX)](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/nizhikebinesi/golang-developer-test-task)](https://www.tickgit.com/browse?repo=github.com/nizhikebinesi/golang-developer-test-task/branch/dev)
+[![codecov](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task/graph/badge.svg?token=JJVKAZ8PWX)](https://codecov.io/gh/nizhikebinesi/golang-developer-test-task)
+[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/nizhikebinesi/golang-developer-test-task)](https://www.tickgit.com/browse?repo=github.com/nizhikebinesi/golang-developer-test-task)
 [![Twitter Follow](https://img.shields.io/twitter/follow/nizhikebinesi)](https://twitter.com/nizhikebinesi)
 
 `/search`
@@ -19,7 +19,7 @@
 `/metrics`
 
 
-[badge_build]:https://img.shields.io/github/workflow/status/nizhikebinesi/golang-developer-test-task/tests/dev
+[badge_build]:https://img.shields.io/github/workflow/status/nizhikebinesi/golang-developer-test-task/tests/master
 [badge_language]:https://img.shields.io/badge/language-go_1.18-blue.svg?longCache=true
 [badge_use_template]:https://img.shields.io/badge/start-this_template_using-success.svg?longCache=true
 [link_build]:https://github.com/nizhikebinesi/golang-developer-test-task/actions
