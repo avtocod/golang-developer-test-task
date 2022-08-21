@@ -71,6 +71,9 @@ func (r *RedisClient) FindValues(ctx context.Context, searchStr string, multiple
 		return infoList, 0, err
 	}
 
+	if paginationSize <= 0 {
+		return infoList, size, nil
+	}
 	start := offset
 	end := offset + paginationSize
 	if start > size {

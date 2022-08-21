@@ -140,9 +140,25 @@ func TestFindValuesSingleNothing(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(infoList) != 0 {
-		t.Errorf("infoList length is not equal to 1; infoList: %v", infoList)
+		t.Errorf("infoList length is not equal to 0; infoList: %v", infoList)
 	}
 	if size := len(infoList); int64(size) != totalSize {
 		t.Errorf("infoList length is not equal to totalSize; len(infoList) = %d ; totalSize = %d", size, totalSize)
+	}
+}
+
+func TestFindValuesMultipleZeroPaginationSize(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	key := "777"
+	mock.ExpectLLen(key).SetVal(0)
+	client := &RedisClient{*db}
+
+	infoList, _, err := client.FindValues(context.Background(), key, true, 0, 0)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(infoList) != 0 {
+		t.Errorf("infoList length is not equal to 0; infoList: %v", infoList)
 	}
 }
