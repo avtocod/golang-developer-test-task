@@ -10,33 +10,130 @@ import (
 
 // AddValue add info to Redis storage
 func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("in AddValue: %w", err)
+		}
+	}()
 	bs, err := easyjson.Marshal(info)
 	if err != nil {
 		return err
 	}
 	err = r.Set(ctx, info.SystemObjectID, bs, 0).Err()
 	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
 		return err
 	}
 	// TODO: add rollout when Set/RPush fails
-	err = r.Set(ctx, fmt.Sprintf("global_id:%d", info.GlobalID), info.SystemObjectID, 0).Err()
+	globalId := fmt.Sprintf("global_id:%d", info.GlobalID)
+	err = r.Set(ctx, globalId, info.SystemObjectID, 0).Err()
 	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, globalId).Err()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	err = r.Set(ctx, fmt.Sprintf("id:%d", info.ID), info.SystemObjectID, 0).Err()
+	id := fmt.Sprintf("id:%d", info.ID)
+	err = r.Set(ctx, id, info.SystemObjectID, 0).Err()
 	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, globalId).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, id).Err()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	err = r.Set(ctx, fmt.Sprintf("id_en:%d", info.IDEn), info.SystemObjectID, 0).Err()
+	idEn := fmt.Sprintf("id_en:%d", info.IDEn)
+	err = r.Set(ctx, idEn, info.SystemObjectID, 0).Err()
 	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, globalId).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, id).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, idEn).Err()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	err = r.RPush(ctx, fmt.Sprintf("mode:%s", info.Mode), info.SystemObjectID).Err()
+	mode := fmt.Sprintf("mode:%s", info.Mode)
+	err = r.RPush(ctx, mode, info.SystemObjectID).Err()
 	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, globalId).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, id).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, idEn).Err()
+		if e != nil {
+			return e
+		}
+		err = r.RPop(ctx, mode).Err()
+		if e != nil {
+			return e
+		}
 		return err
 	}
-	err = r.RPush(ctx, fmt.Sprintf("mode_en:%s", info.ModeEn), info.SystemObjectID).Err()
-	return err
+	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
+	err = r.RPush(ctx, modeEn, info.SystemObjectID).Err()
+	if err != nil {
+		e := r.Del(ctx, info.SystemObjectID).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, globalId).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, id).Err()
+		if e != nil {
+			return e
+		}
+		e = r.Del(ctx, idEn).Err()
+		if e != nil {
+			return e
+		}
+		e = r.RPop(ctx, mode).Err()
+		if e != nil {
+			return e
+		}
+		e = r.RPop(ctx, modeEn).Err()
+		if e != nil {
+			return e
+		}
+		return err
+	}
+	return nil
 }
 
 // FindValues is a method for searching values by searchStr
