@@ -207,6 +207,10 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	case searchObj.ModeEn != nil:
 		searchStr = *searchObj.ModeEn
 		multiple = true
+	default:
+		d.logger.Error("searchObj's all necessary fields are nil")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	paginationObj := structs.PaginationObject{}
