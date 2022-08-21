@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"golang-developer-test-task/redclient"
+	redclient2 "golang-developer-test-task/infrastructure/redclient"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -20,10 +20,10 @@ func main() {
 	}()
 
 	ctx := context.Background()
-	conf := redclient.RedisConfig{}
+	conf := redclient2.RedisConfig{}
 	conf.Load()
 
-	client := redclient.NewRedisClient(ctx, conf)
+	client := redclient2.NewRedisClient(ctx, conf)
 	defer func() {
 		err = client.Close()
 		if err != nil {
@@ -31,7 +31,7 @@ func main() {
 		}
 	}()
 
-	dbLogic := DBProcessor{client: client, logger: logger}
+	dbLogic := NewDBProcessor(client, logger)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/load_file", dbLogic.HandleLoadFile)
