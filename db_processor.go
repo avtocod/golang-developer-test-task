@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"golang-developer-test-task/redclient"
 	"golang-developer-test-task/structs"
@@ -91,6 +92,16 @@ func (f *DBProcessor) ProcessFileFromURL(url string, processor jsonObjectsProces
 			zap.Error(err))
 		return err
 	}
+	if resp.ContentLength > 32<<20 {
+		s := fmt.Sprintf("too big resp body: %d", resp.ContentLength)
+		f.logger.Error(s)
+		return errors.New(s)
+	}
+	if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+		s := fmt.Sprintf("unsupported Content-Type: %s", contentType)
+		f.logger.Error(s)
+		return errors.New(s)
+	}
 	defer func() {
 		err = resp.Body.Close()
 	}()
@@ -140,7 +151,7 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if _, err := url.ParseRequestURI(urlObj.URL); err != nil {
+	if _, err := url.Parse(urlObj.URL); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
