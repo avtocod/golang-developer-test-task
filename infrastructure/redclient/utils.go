@@ -18,6 +18,7 @@ func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err erro
 	if err != nil {
 		return err
 	}
+	// TODO: add rollout when Set/RPush fails
 	err = r.Set(ctx, fmt.Sprintf("global_id:%d", info.GlobalID), info.SystemObjectID, 0).Err()
 	if err != nil {
 		return err
