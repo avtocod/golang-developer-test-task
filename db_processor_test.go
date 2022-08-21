@@ -392,6 +392,57 @@ func TestHandleLoadFileWithParenthesisProblem(t *testing.T) {
 	}
 }
 
+func TestHandleSearchWithoutNilSearchObject(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	// TODO: add data to mock before it
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	req := httptest.NewRequest("POST", "/api/search", nil)
+	req.Header.Add("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	// processor.HandleLoadFile(res, req)
+	h := processor.MethodMiddleware(processor.HandleSearch, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestHandleSearchWithoutNecessaryParamsInsideSearchObject(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	// TODO: add data to mock before it
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	searchObject := structs.SearchObject{}
+	bs, _ := easyjson.Marshal(searchObject)
+
+	req := httptest.NewRequest("POST", "/api/search", bytes.NewBuffer(bs))
+	req.Header.Add("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	// processor.HandleLoadFile(res, req)
+	h := processor.MethodMiddleware(processor.HandleSearch, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusBadRequest {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
+	}
+}
+
 func TestHandleLoadFileWrongFileName(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it

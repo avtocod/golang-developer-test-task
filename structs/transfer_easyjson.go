@@ -163,7 +163,7 @@ func easyjsonD0c14475DecodeGolangDeveloperTestTaskStructs1(in *jlexer.Lexer, out
 				*out.ModeEn = string(in.String())
 			}
 		case "offset":
-			out.Offset = int64(in.Int64())
+			out.Offset = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -242,7 +242,7 @@ func easyjsonD0c14475EncodeGolangDeveloperTestTaskStructs1(out *jwriter.Writer, 
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int64(int64(in.Offset))
+		out.Int(int(in.Offset))
 	}
 	out.RawByte('}')
 }

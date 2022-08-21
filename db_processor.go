@@ -183,15 +183,25 @@ func (d *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 
 // HandleSearch is handler for /api/search
 func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
-	var searchObj structs.SearchObject
+	bs, err := io.ReadAll(r.Body)
+	if err != nil {
+		d.logger.Error("during ReadAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	ctx := r.Context()
+	var searchObj structs.SearchObject
+	err = easyjson.Unmarshal(bs, &searchObj)
+	if err != nil {
+		d.logger.Error("during Unmarshal",
+			zap.Error(err),
+			zap.String("searchObj", fmt.Sprintf("%v", searchObj)))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	searchStr := ""
 	multiple := false
-	// TODO
-	a := "1704691"
-	searchObj.SystemObjectID = &a
-
 	switch {
 	case searchObj.SystemObjectID != nil:
 		searchStr = *searchObj.SystemObjectID
@@ -213,10 +223,13 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	paginationObj := structs.PaginationObject{}
-	paginationObj.Offset = searchObj.Offset
+	paginationObj.Offset = int64(searchObj.Offset)
 	var paginationSize int64 = 5
-	infoList, totalSize, err := d.client.FindValues(ctx, searchStr, multiple, paginationSize, searchObj.Offset)
+	infoList, totalSize, err := d.client.FindValues(
+		ctx, searchStr, multiple, paginationSize,
+		int64(searchObj.Offset))
 	if err != nil {
 		d.logger.Error("during search in DB", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -225,7 +238,7 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	paginationObj.Size = totalSize
 	paginationObj.Data = infoList
 
-	bs, err := easyjson.Marshal(paginationObj)
+	bs, err = easyjson.Marshal(paginationObj)
 	if err != nil {
 		d.logger.Error("during marshaling paginationObj", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)

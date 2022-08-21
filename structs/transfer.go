@@ -43,7 +43,7 @@ type (
 		Mode           *string `json:"mode,omitempty"`
 		IDEn           *int    `json:"id_en,omitempty"`
 		ModeEn         *string `json:"mode_en,omitempty"`
-		Offset         int64   `json:"offset"`
+		Offset         int     `json:"offset"`
 	}
 
 	// PaginationObject contains info about data by query which is contained in DB
