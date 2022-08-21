@@ -202,20 +202,25 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	searchStr := ""
 	multiple := false
+	// globalID := fmt.Sprintf("global_id:%d", info.GlobalID)
+	//id := fmt.Sprintf("id:%d", info.ID)
+	//idEn := fmt.Sprintf("id_en:%d", info.IDEn)
+	//mode := fmt.Sprintf("mode:%s", info.Mode)
+	//modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 	switch {
 	case searchObj.SystemObjectID != nil:
 		searchStr = *searchObj.SystemObjectID
 	case searchObj.GlobalID != nil:
-		searchStr = strconv.Itoa(*searchObj.GlobalID)
+		searchStr = fmt.Sprintf("global_id:%d", *searchObj.GlobalID)
 	case searchObj.ID != nil:
-		searchStr = strconv.Itoa(*searchObj.ID)
+		searchStr = fmt.Sprintf("id:%d", *searchObj.ID)
 	case searchObj.IDEn != nil:
-		searchStr = strconv.Itoa(*searchObj.IDEn)
+		searchStr = fmt.Sprintf("id_en:%d", *searchObj.IDEn)
 	case searchObj.Mode != nil:
-		searchStr = *searchObj.Mode
+		searchStr = fmt.Sprintf("mode:%s", *searchObj.Mode)
 		multiple = true
 	case searchObj.ModeEn != nil:
-		searchStr = *searchObj.ModeEn
+		searchStr = fmt.Sprintf("mode_en:%s", *searchObj.ModeEn)
 		multiple = true
 	default:
 		d.logger.Error("searchObj's all necessary fields are nil")
@@ -229,7 +234,7 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	var paginationSize int64 = 5
 	infoList, totalSize, err := d.client.FindValues(
 		ctx, searchStr, multiple, paginationSize,
-		int64(searchObj.Offset))
+		paginationObj.Offset)
 	if err != nil {
 		d.logger.Error("during search in DB", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
