@@ -23,12 +23,12 @@ func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err erro
 	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 
 	txf := func(tx *redis.Tx) error {
-		err = tx.Get(ctx, info.SystemObjectID).Err()
+		err := tx.Get(ctx, info.SystemObjectID).Err()
 		if err != nil {
 			return err
 		}
 
-		_, err := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			pipe.Set(ctx, info.SystemObjectID, bs, 0)
 			pipe.Set(ctx, globalID, info.SystemObjectID, 0)
 			pipe.Set(ctx, id, info.SystemObjectID, 0)
