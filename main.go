@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"golang-developer-test-task/redclient"
+	"golang-developer-test-task/infrastructure/redclient"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -31,7 +31,7 @@ func main() {
 		}
 	}()
 
-	dbLogic := DBProcessor{client: client, logger: logger}
+	dbLogic := NewDBProcessor(client, logger)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/load_file", dbLogic.HandleLoadFile)
