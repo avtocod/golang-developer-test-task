@@ -108,7 +108,10 @@ func TestFindValuesSingle(t *testing.T) {
 	mock.ExpectGet(key).SetVal(string(bs))
 	client := &RedisClient{*db}
 
-	client.AddValue(context.Background(), info)
+	err := client.AddValue(context.Background(), info)
+	if err != nil {
+		t.Fatal(err)
+	}
 	infoList, totalSize, err := client.FindValues(context.Background(), key, false, 0, 0)
 
 	if err != nil {
