@@ -118,7 +118,7 @@ func (f *DBProcessor) ProcessFileFromRequest(r *http.Request, fileName string, p
 		return err
 	}
 	defer func() {
-		err = file.Close()
+		_ = file.Close()
 	}()
 	err = processor(file)
 	return err
@@ -133,6 +133,7 @@ func (f *DBProcessor) HandleLoadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	err = f.ProcessFileFromRequest(r, "uploadFile", f.ProcessJSONs)
 	if err != nil {
+		f.logger.Error("error during file processing", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -157,6 +158,7 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 	}
 	err = f.ProcessFileFromURL(urlObj.URL, f.ProcessJSONs)
 	if err != nil {
+		f.logger.Error("error during file processing from url", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

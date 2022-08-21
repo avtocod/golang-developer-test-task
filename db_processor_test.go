@@ -345,6 +345,53 @@ func TestHandleLoadFile(t *testing.T) {
 	}
 }
 
+func TestHandleLoadFileWithParenthesisProblem(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	// TODO: add data to mock before it
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := DBProcessor{client: client, logger: logger}
+
+	filePath := "test_data/parenthesis_problem.json"
+	file, err := os.Open(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("uploadFile", filepath.Base(file.Name()))
+	_, err = io.Copy(part, file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = writer.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest("POST", "/api/load_file", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	res := httptest.NewRecorder()
+	h := processor.CheckHandlerRequestMethod(processor.HandleLoadFile, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
 func TestHandleLoadFileWrongFileName(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
