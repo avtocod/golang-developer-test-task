@@ -43,13 +43,13 @@ type (
 		Mode           *string `json:"mode,omitempty"`
 		IDEn           *int    `json:"id_en,omitempty"`
 		ModeEn         *string `json:"mode_en,omitempty"`
-		Offset         int     `json:"offset"`
+		Offset         int64   `json:"offset"`
 	}
 
 	// PaginationObject contains info about data by query which is contained in DB
 	PaginationObject struct {
-		Size        int      `json:"size"`
-		Offset      int      `json:"offset"`
+		Size        int64    `json:"size"`
+		Offset      int64    `json:"offset"`
 		HasNext     bool     `json:"hasNext"`
 		HasPrevious bool     `json:"hasPrevious"`
 		Data        InfoList `json:"data"`

@@ -14,8 +14,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-redis/redis/v9"
-
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 	"golang.org/x/text/encoding/charmap"
@@ -211,49 +209,21 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		multiple = true
 	}
 
-	var v string
-	var err error
 	paginationObj := structs.PaginationObject{}
-	paginationObj.Data = make(structs.InfoList, 0)
-	if !multiple {
-		v, err = d.client.Get(ctx, searchStr).Result()
-		if err != redis.Nil {
-			paginationObj.Size = 1
-			var info structs.Info
-			err = easyjson.Unmarshal([]byte(v), &info)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			paginationObj.Data = append(paginationObj.Data, info)
-		}
-	} else {
-		paginationSize := 5
-		var start, end int64
-		start = int64(searchObj.Offset)
-		end = int64(searchObj.Offset + paginationSize)
-		var vs []string
-		vs, err = d.client.LRange(ctx, searchStr, start, end).Result()
-		if err != redis.Nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		size, _ := d.client.LLen(ctx, searchStr).Result()
-		paginationObj.Size = int(size)
-		data := make(structs.InfoList, len(vs))
-		for _, v := range vs {
-			var info structs.Info
-			err = easyjson.Unmarshal([]byte(v), &info)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-		}
-		paginationObj.Data = data
+	paginationObj.Offset = searchObj.Offset
+	var paginationSize int64 = 5
+	infoList, totalSize, err := d.client.FindValues(ctx, searchStr, multiple, paginationSize, searchObj.Offset)
+	if err != nil {
+		d.logger.Error("during search in DB", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	paginationObj.Size = totalSize
+	paginationObj.Data = infoList
 
 	bs, err := easyjson.Marshal(paginationObj)
 	if err != nil {
+		d.logger.Error("during marshaling paginationObj", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

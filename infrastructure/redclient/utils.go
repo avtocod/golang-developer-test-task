@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang-developer-test-task/structs"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/mailru/easyjson"
 )
 
@@ -37,4 +38,48 @@ func (r *RedisClient) AddValue(ctx context.Context, info structs.Info) (err erro
 	}
 	err = r.RPush(ctx, fmt.Sprintf("mode_en:%s", info.ModeEn), info.SystemObjectID).Err()
 	return err
+}
+
+// FindValues is a method for searching values by searchStr
+func (r *RedisClient) FindValues(ctx context.Context, searchStr string, multiple bool, paginationSize, offset int64) (infoList structs.InfoList, totalSize int64, err error) {
+	if !multiple {
+		v, err := r.Get(ctx, searchStr).Result()
+		if err != redis.Nil {
+			return infoList, 0, err
+		}
+		var info structs.Info
+		err = easyjson.Unmarshal([]byte(v), &info)
+		if err != nil {
+			return infoList, 1, err
+		}
+		infoList = append(infoList, info)
+		return infoList, 1, nil
+	}
+
+	size, err := r.LLen(ctx, searchStr).Result()
+	if err != nil {
+		return infoList, 0, err
+	}
+
+	start := offset
+	end := offset + paginationSize
+	if start > size {
+		return infoList, size, nil
+	}
+
+	var vs []string
+	vs, err = r.LRange(ctx, searchStr, start, end).Result()
+	if err != redis.Nil {
+		return infoList, size, err
+	}
+
+	for _, v := range vs {
+		var info structs.Info
+		err = easyjson.Unmarshal([]byte(v), &info)
+		if err != nil {
+			return
+		}
+		infoList = append(infoList, info)
+	}
+	return infoList, size, nil
 }
