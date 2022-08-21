@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"golang-developer-test-task/redclient"
 	"golang-developer-test-task/structs"
@@ -43,6 +44,11 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 	}
 	dec := charmap.Windows1251.NewDecoder()
 	out, err := dec.Bytes(bs)
+	if err != nil {
+		f.logger.Error("error inside ProcessJSONs during change encoding to cp1251",
+			zap.Error(err))
+		return err
+	}
 	var infoList structs.InfoList
 	err = easyjson.Unmarshal(out, &infoList)
 	if err != nil {
@@ -55,9 +61,9 @@ func (f *DBProcessor) ProcessJSONs(reader io.Reader) (err error) {
 		// TODO: should we accumulate json objects to insert?
 		//  or restrict number of goroutines?
 		go func(info structs.Info) {
-			err = f.client.AddValue(context.Background(), info)
+			err := f.client.AddValue(context.Background(), info)
 			if err != nil {
-				f.logger.Error("error inside ProcessJSONs' goroutine during adding value",
+				f.logger.Error("error inside ProcessJSONs in goroutine",
 					zap.Error(err))
 				return
 			}
@@ -86,6 +92,16 @@ func (f *DBProcessor) ProcessFileFromURL(url string, processor jsonObjectsProces
 			zap.Error(err))
 		return err
 	}
+	if resp.ContentLength > 32<<20 {
+		s := fmt.Sprintf("too big resp body: %d", resp.ContentLength)
+		f.logger.Error(s)
+		return errors.New(s)
+	}
+	if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+		s := fmt.Sprintf("unsupported Content-Type: %s", contentType)
+		f.logger.Error(s)
+		return errors.New(s)
+	}
 	defer func() {
 		err = resp.Body.Close()
 	}()
@@ -102,7 +118,7 @@ func (f *DBProcessor) ProcessFileFromRequest(r *http.Request, fileName string, p
 		return err
 	}
 	defer func() {
-		err = file.Close()
+		_ = file.Close()
 	}()
 	err = processor(file)
 	return err
@@ -117,6 +133,7 @@ func (f *DBProcessor) HandleLoadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	err = f.ProcessFileFromRequest(r, "uploadFile", f.ProcessJSONs)
 	if err != nil {
+		f.logger.Error("error during file processing", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -135,12 +152,13 @@ func (f *DBProcessor) HandleLoadFromURL(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if _, err := url.ParseRequestURI(urlObj.URL); err != nil {
+	if _, err := url.Parse(urlObj.URL); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	err = f.ProcessFileFromURL(urlObj.URL, f.ProcessJSONs)
 	if err != nil {
+		f.logger.Error("error during file processing from url", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
