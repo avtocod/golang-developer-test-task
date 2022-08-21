@@ -202,11 +202,6 @@ func (d *DBProcessor) HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	searchStr := ""
 	multiple := false
-	// globalID := fmt.Sprintf("global_id:%d", info.GlobalID)
-	//id := fmt.Sprintf("id:%d", info.ID)
-	//idEn := fmt.Sprintf("id_en:%d", info.IDEn)
-	//mode := fmt.Sprintf("mode:%s", info.Mode)
-	//modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 	switch {
 	case searchObj.SystemObjectID != nil:
 		searchStr = *searchObj.SystemObjectID
