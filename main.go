@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	redclient2 "golang-developer-test-task/infrastructure/redclient"
+	"golang-developer-test-task/infrastructure/redclient"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -20,10 +20,10 @@ func main() {
 	}()
 
 	ctx := context.Background()
-	conf := redclient2.RedisConfig{}
+	conf := redclient.RedisConfig{}
 	conf.Load()
 
-	client := redclient2.NewRedisClient(ctx, conf)
+	client := redclient.NewRedisClient(ctx, conf)
 	defer func() {
 		err = client.Close()
 		if err != nil {
