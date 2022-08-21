@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"golang-developer-test-task/structs"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/mailru/easyjson"
@@ -57,6 +58,12 @@ func (r *RedisClient) FindValues(ctx context.Context, searchStr string, multiple
 		if err != nil {
 			return infoList, 0, err
 		}
+		if strings.Contains(searchStr, ":") {
+			v, err = r.Get(ctx, v).Result()
+			if err != nil {
+				return infoList, 0, err
+			}
+		}
 		var info structs.Info
 		err = easyjson.Unmarshal([]byte(v), &info)
 		if err != nil {
@@ -88,9 +95,13 @@ func (r *RedisClient) FindValues(ctx context.Context, searchStr string, multiple
 
 	for _, v := range vs {
 		var info structs.Info
-		err = easyjson.Unmarshal([]byte(v), &info)
+		vv, err := r.Get(ctx, v).Result()
 		if err != nil {
-			return
+			return infoList, size, err
+		}
+		err = easyjson.Unmarshal([]byte(vv), &info)
+		if err != nil {
+			return infoList, size, err
 		}
 		infoList = append(infoList, info)
 	}

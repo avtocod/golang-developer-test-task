@@ -35,11 +35,11 @@ func TestAddValue(t *testing.T) {
 	mock.ExpectGet(info.SystemObjectID).SetVal("")
 	mock.ExpectTxPipeline()
 	mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("global_id:%d", info.GlobalID), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("id:%d", info.ID), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("id_en:%d", info.IDEn), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectRPush(fmt.Sprintf("mode:%s", info.Mode), info.SystemObjectID).SetVal(0)
-	mock.ExpectRPush(fmt.Sprintf("mode_en:%s", info.ModeEn), info.SystemObjectID).SetVal(0)
+	mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
+	mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
 	mock.ExpectTxPipelineExec()
 
 	client := &RedisClient{*db}
@@ -97,11 +97,11 @@ func TestFindValuesSingle(t *testing.T) {
 	mock.ExpectGet(info.SystemObjectID).SetVal("")
 	mock.ExpectTxPipeline()
 	mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("global_id:%d", info.GlobalID), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("id:%d", info.ID), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectSet(fmt.Sprintf("id_en:%d", info.IDEn), info.SystemObjectID, 0).SetVal("OK")
-	mock.ExpectRPush(fmt.Sprintf("mode:%s", info.Mode), info.SystemObjectID).SetVal(0)
-	mock.ExpectRPush(fmt.Sprintf("mode_en:%s", info.ModeEn), info.SystemObjectID).SetVal(0)
+	mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
+	mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
 	mock.ExpectTxPipelineExec()
 
 	key := info.SystemObjectID
@@ -160,5 +160,78 @@ func TestFindValuesMultipleZeroPaginationSize(t *testing.T) {
 	}
 	if len(infoList) != 0 {
 		t.Errorf("infoList length is not equal to 0; infoList: %v", infoList)
+	}
+}
+
+func TestFindValuesMultipleStartIsMoreThanSize(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	key := "777"
+	mock.ExpectLLen(key).SetVal(0)
+	client := &RedisClient{*db}
+
+	infoList, _, err := client.FindValues(context.Background(), key, true, 1, 1)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(infoList) != 0 {
+		t.Errorf("infoList length is not equal to 0; infoList: %v", infoList)
+	}
+}
+
+func TestFindValuesMultiple(t *testing.T) {
+	info := structs.Info{
+		GlobalID:       42,
+		SystemObjectID: "777",
+		ID:             1,
+		IDEn:           9,
+		Mode:           "abc",
+		ModeEn:         "cba",
+	}
+
+	globalID := fmt.Sprintf("global_id:%d", info.GlobalID)
+	id := fmt.Sprintf("id:%d", info.ID)
+	idEn := fmt.Sprintf("id_en:%d", info.IDEn)
+	mode := fmt.Sprintf("mode:%s", info.Mode)
+	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
+
+	bs, _ := easyjson.Marshal(info)
+
+	db, mock := redismock.NewClientMock()
+	mock.ExpectWatch(info.SystemObjectID, globalID, id, idEn, mode, modeEn)
+	mock.ExpectGet(info.SystemObjectID).SetVal("")
+	mock.ExpectTxPipeline()
+	mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
+	mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
+	mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
+	mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
+	mock.ExpectTxPipelineExec()
+
+	key := info.SystemObjectID
+	var paginationSize int64 = 5
+	mock.ExpectLLen(mode).SetVal(1)
+	mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
+	mock.ExpectGet(key).SetVal(string(bs))
+	client := &RedisClient{*db}
+
+	err := client.AddValue(context.Background(), info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	infoList, totalSize, err := client.FindValues(context.Background(), mode, true, paginationSize, 0)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(infoList) != 1 {
+		t.Errorf("infoList length is not equal to 1; infoList: %v", infoList)
+	}
+	if size := len(infoList); int64(size) != totalSize {
+		t.Errorf("infoList length is not equal to totalSize; len(infoList) = %d ; totalSize = %d", size, totalSize)
+	}
+	if info != infoList[0] {
+		t.Errorf("data inside infoList is not info; info: %v ; infoList: %v", info, infoList)
 	}
 }
