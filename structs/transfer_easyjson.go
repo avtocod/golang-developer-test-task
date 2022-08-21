@@ -290,9 +290,9 @@ func easyjsonD0c14475DecodeGolangDeveloperTestTaskStructs2(in *jlexer.Lexer, out
 		}
 		switch key {
 		case "size":
-			out.Size = int(in.Int())
+			out.Size = int64(in.Int64())
 		case "offset":
-			out.Offset = int(in.Int())
+			out.Offset = int64(in.Int64())
 		case "hasNext":
 			out.HasNext = bool(in.Bool())
 		case "hasPrevious":
@@ -316,12 +316,12 @@ func easyjsonD0c14475EncodeGolangDeveloperTestTaskStructs2(out *jwriter.Writer, 
 	{
 		const prefix string = ",\"size\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.Size))
+		out.Int64(int64(in.Size))
 	}
 	{
 		const prefix string = ",\"offset\":"
 		out.RawString(prefix)
-		out.Int(int(in.Offset))
+		out.Int64(int64(in.Offset))
 	}
 	{
 		const prefix string = ",\"hasNext\":"

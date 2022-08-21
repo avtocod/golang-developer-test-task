@@ -48,8 +48,8 @@ type (
 
 	// PaginationObject contains info about data by query which is contained in DB
 	PaginationObject struct {
-		Size        int      `json:"size"`
-		Offset      int      `json:"offset"`
+		Size        int64    `json:"size"`
+		Offset      int64    `json:"offset"`
 		HasNext     bool     `json:"hasNext"`
 		HasPrevious bool     `json:"hasPrevious"`
 		Data        InfoList `json:"data"`

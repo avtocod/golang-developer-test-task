@@ -1,4 +1,4 @@
-name: tests
+name: features_and_fixes
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
       - 'feature/**'
     tags-ignore:
       - '**'
-  pull_request:
 
 jobs:
   gofmt:
