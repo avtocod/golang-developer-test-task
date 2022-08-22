@@ -27,7 +27,7 @@ func (errReader) Read(p []byte) (n int, err error) {
 	return 0, errors.New("test error")
 }
 
-func TestProcessJSONs(t *testing.T) {
+func TestProcessJSONsErrReadAll(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db, 10}
 
@@ -82,6 +82,27 @@ func TestHandleMainPageBadRequest(t *testing.T) {
 
 	if res.Code != http.StatusBadRequest {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusBadRequest)
+	}
+}
+
+func TestSearchURLErrReader(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db, 10}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	req := httptest.NewRequest("POST", "/api/search", errReader(0))
+	res := httptest.NewRecorder()
+	h := processor.MethodMiddleware(processor.HandleSearch, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
 	}
 }
 
@@ -635,6 +656,27 @@ func TestHandleSearchErrDuringSearch(t *testing.T) {
 	res := httptest.NewRecorder()
 	// processor.HandleLoadFile(res, req)
 	h := processor.MethodMiddleware(processor.HandleSearch, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestHandleLoadFromURLErrReader(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db, 10}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	req := httptest.NewRequest("POST", "/api/load_from_url", errReader(0))
+	res := httptest.NewRecorder()
+	h := processor.MethodMiddleware(processor.HandleLoadFromURL, "POST")
 	h(res, req)
 
 	if res.Code != http.StatusInternalServerError {
