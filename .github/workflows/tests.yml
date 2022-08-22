@@ -59,10 +59,14 @@ jobs:
       - name: Run Unit tests
         run: go test -v -race -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
 
+      - name: Clean from easyjson
+        run: cat coverage.out | grep -v "_easyjson.go" > cover.out
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./cover.out
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
