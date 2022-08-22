@@ -496,11 +496,8 @@ func TestFindValuesMultipleLRangeErr(t *testing.T) {
 	mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
 	mock.ExpectTxPipelineExec()
 
-	// key := info.SystemObjectID
 	var paginationSize int64 = 5
 	mock.ExpectLLen(mode).SetVal(1)
-	// mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
-	//mock.ExpectGet(key).SetVal(string(bs))
 	client := &RedisClient{*db, 10}
 
 	err := client.AddValue(context.Background(), info)
@@ -578,39 +575,17 @@ func TestAddValueRetriesFailed(t *testing.T) {
 	mode := fmt.Sprintf("mode:%s", info.Mode)
 	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 
-	// bs, _ := easyjson.Marshal(info)
-
 	maxRetries := 2
 	db, mock := redismock.NewClientMock()
 	for i := 0; i < maxRetries; i++ {
 		mock.ExpectWatch(info.SystemObjectID, globalID, id, idEn, mode, modeEn).SetErr(redis.TxFailedErr)
 	}
-	// mock.ExpectGet(info.SystemObjectID).SetVal("")
-	//mock.ExpectTxPipeline()
-	//mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
-	//mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
-	//mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
-	//mock.ExpectTxPipelineExec()
-
-	// key := info.SystemObjectID
-	//var paginationSize int64 = 5
-	//mock.ExpectLLen(mode).SetVal(1)
-	//mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
-	//mock.ExpectGet(key).SetVal(string(bs))
 	client := &RedisClient{Client: *db, MaxRetries: maxRetries}
 
 	err := client.AddValue(context.Background(), info)
 	if err == nil {
 		t.Fatal(err)
 	}
-	// _, _, err = client.FindValues(context.Background(), mode, true, paginationSize, 0)
-	//
-	//if err == nil {
-	//	t.Fatal(err)
-	//}
 }
 
 func TestAddValueRetries(t *testing.T) {
@@ -629,41 +604,18 @@ func TestAddValueRetries(t *testing.T) {
 	mode := fmt.Sprintf("mode:%s", info.Mode)
 	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 
-	// bs, _ := easyjson.Marshal(info)
-
 	maxRetries := 1
 	db, mock := redismock.NewClientMock()
 	for i := 0; i < maxRetries; i++ {
-		// fmt.Println(redis.TxFailedErr == redis.TxFailedErr)
 		mock.ExpectWatch(info.SystemObjectID, globalID, id,
 			idEn, mode, modeEn).SetErr(redis.TxFailedErr)
 	}
-	// mock.ExpectGet(info.SystemObjectID).SetVal("")
-	//mock.ExpectTxPipeline()
-	//mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
-	//mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
-	//mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
-	//mock.ExpectTxPipelineExec()
-
-	// key := info.SystemObjectID
-	//var paginationSize int64 = 5
-	//mock.ExpectLLen(mode).SetVal(1)
-	//mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
-	//mock.ExpectGet(key).SetVal(string(bs))
 	client := &RedisClient{Client: *db, MaxRetries: maxRetries}
 
 	err := client.AddValue(context.Background(), info)
 	if err != redis.TxFailedErr {
 		t.Fatal(err)
 	}
-	// _, _, err = client.FindValues(context.Background(), mode, true, paginationSize, 0)
-	//
-	//if err == nil {
-	//	t.Fatal(err)
-	//}
 }
 
 func TestAddValueErrInsideWatchFirstGet(t *testing.T) {
@@ -682,37 +634,15 @@ func TestAddValueErrInsideWatchFirstGet(t *testing.T) {
 	mode := fmt.Sprintf("mode:%s", info.Mode)
 	modeEn := fmt.Sprintf("mode_en:%s", info.ModeEn)
 
-	// bs, _ := easyjson.Marshal(info)
-
 	maxRetries := 1
 	db, mock := redismock.NewClientMock()
-	// fmt.Println(redis.TxFailedErr == redis.TxFailedErr)
 	mock.ExpectWatch(info.SystemObjectID, globalID, id,
 		idEn, mode, modeEn)
 	mock.ExpectGet(info.SystemObjectID).SetErr(redis.Nil)
-	// mock.ExpectTxPipeline()
-	//mock.ExpectSet(info.SystemObjectID, bs, 0).SetVal("OK")
-	//mock.ExpectSet(globalID, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(id, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectSet(idEn, info.SystemObjectID, 0).SetVal("OK")
-	//mock.ExpectRPush(mode, info.SystemObjectID).SetVal(0)
-	//mock.ExpectRPush(modeEn, info.SystemObjectID).SetVal(0)
-	//mock.ExpectTxPipelineExec()
-
-	// key := info.SystemObjectID
-	//var paginationSize int64 = 5
-	//mock.ExpectLLen(mode).SetVal(1)
-	//mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
-	//mock.ExpectGet(key).SetVal(string(bs))
 	client := &RedisClient{Client: *db, MaxRetries: maxRetries}
 
 	err := client.AddValue(context.Background(), info)
 	if err != redis.Nil {
 		t.Fatal(err)
 	}
-	// _, _, err = client.FindValues(context.Background(), mode, true, paginationSize, 0)
-	//
-	//if err == nil {
-	//	t.Fatal(err)
-	//}
 }
