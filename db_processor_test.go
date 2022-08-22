@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"golang-developer-test-task/infrastructure/redclient"
 	"golang-developer-test-task/structs"
@@ -19,6 +20,28 @@ import (
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 )
+
+type errReader int
+
+func (errReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("test error")
+}
+
+func TestProcessJSONs(t *testing.T) {
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db, 10}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+	err := processor.processJSONs(errReader(0), processor.saveInfo)
+	if err.Error() != "test error" {
+		t.Fatal(err)
+	}
+}
 
 func TestHandleMainPage(t *testing.T) {
 	db, _ := redismock.NewClientMock()
