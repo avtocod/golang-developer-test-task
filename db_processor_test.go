@@ -583,6 +583,49 @@ func TestHandleSearchGlobalID(t *testing.T) {
 	}
 }
 
+func TestHandleSearchErrDuringSearch(t *testing.T) {
+	info := structs.Info{
+		GlobalID:       42,
+		SystemObjectID: "777",
+		ID:             1,
+		IDEn:           9,
+		Mode:           "abc",
+		ModeEn:         "cba",
+	}
+
+	//globalID := fmt.Sprintf("global_id:%d", info.GlobalID)
+
+	//bs, _ := easyjson.Marshal(info)
+
+	db, _ := redismock.NewClientMock()
+
+	//mock.ExpectGet(globalID).SetVal(info.SystemObjectID)
+	//mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
+
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	searchObject := structs.SearchObject{GlobalID: &info.GlobalID}
+	bs1, _ := easyjson.Marshal(searchObject)
+
+	req := httptest.NewRequest("POST", "/api/search", bytes.NewBuffer(bs1))
+	req.Header.Add("Content-Type", "application/json")
+	res := httptest.NewRecorder()
+	// processor.HandleLoadFile(res, req)
+	h := processor.MethodMiddleware(processor.HandleSearch, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
 func TestHandleLoadFromURLBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db}
