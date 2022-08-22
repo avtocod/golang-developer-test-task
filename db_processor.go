@@ -108,7 +108,10 @@ func (d *DBProcessor) processFileFromURL(url string, processor jsonObjectsProces
 		return errors.New(s)
 	}
 	defer func() {
-		err = resp.Body.Close()
+		e := resp.Body.Close()
+		if e != nil {
+			err = e
+		}
 	}()
 	err = processor(resp.Body)
 	return err
@@ -123,7 +126,10 @@ func (d *DBProcessor) processFileFromRequest(r *http.Request, fileName string, p
 		return err
 	}
 	defer func() {
-		_ = file.Close()
+		e := file.Close()
+		if e != nil {
+			err = e
+		}
 	}()
 	err = processor(file)
 	return err

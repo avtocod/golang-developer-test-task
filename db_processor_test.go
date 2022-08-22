@@ -707,6 +707,41 @@ func TestHandleLoadFromURLResourceWithoutFileButRightContentType(t *testing.T) {
 	}
 }
 
+func TestHandleLoadFromURLResourceBadFile(t *testing.T) {
+	server := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte("{"))
+		}),
+	)
+	defer server.Close()
+
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db, 10}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	urlObject := structs.URLObject{URL: server.URL}
+	bs, err := easyjson.Marshal(urlObject)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest("POST", "/api/load_from_url", bytes.NewBuffer(bs))
+	res := httptest.NewRecorder()
+	h := processor.MethodMiddleware(processor.HandleLoadFromURL, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
 func TestHandleLoadFromURLWrongResource(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	client := &redclient.RedisClient{*db, 10}
@@ -781,35 +816,6 @@ func TestHandleLoadFromURLNilBody(t *testing.T) {
 		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
 	}
 }
-
-// func TestHandleLoadFromURLGoodURLWithErrorDueAdding(t *testing.T) {
-//	db, _ := redismock.NewClientMock()
-//	// TODO: add data to mock before it
-//  client := &redclient.RedisClient{*db, 10}
-//
-//	logger, _ := zap.NewProduction()
-//	defer func() {
-//		_ = logger.Sync()
-//	}()
-//
-//	processor := NewDBProcessor(client, logger)
-//
-//	urlObject := structs.URLObject{URL: "http://op.mos.ru/opendata/files/7704786030-TaxiParking/data-20200706T0000-structure-20200706T0000.json"}
-//	bs, err := easyjson.Marshal(urlObject)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	req := httptest.NewRequest("POST", "/api/load_from_url", bytes.NewBuffer(bs))
-//	res := httptest.NewRecorder()
-//	// processor.HandleLoadFromURL(res, req)
-//	h := processor.MethodMiddleware(processor.HandleLoadFromURL, "POST")
-//	h(res, req)
-//
-//	if res.Code != http.StatusOK {
-//		t.Errorf("got status %d but wanted %d", res.Code, http.StatusOK)
-//	}
-//}
 
 func TestHandleLoadFileBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
