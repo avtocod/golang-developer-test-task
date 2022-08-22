@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/go-redis/redismock/v8"
@@ -593,15 +594,7 @@ func TestHandleSearchErrDuringSearch(t *testing.T) {
 		ModeEn:         "cba",
 	}
 
-	//globalID := fmt.Sprintf("global_id:%d", info.GlobalID)
-
-	//bs, _ := easyjson.Marshal(info)
-
 	db, _ := redismock.NewClientMock()
-
-	//mock.ExpectGet(globalID).SetVal(info.SystemObjectID)
-	//mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
-
 	client := &redclient.RedisClient{*db}
 
 	logger, _ := zap.NewProduction()
@@ -650,6 +643,41 @@ func TestHandleLoadFromURLBadRequest(t *testing.T) {
 func TestHandleLoadFromURLResourceWithoutFile(t *testing.T) {
 	server := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+	)
+	defer server.Close()
+
+	db, _ := redismock.NewClientMock()
+	client := &redclient.RedisClient{*db}
+
+	logger, _ := zap.NewProduction()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	processor := NewDBProcessor(client, logger)
+
+	urlObject := structs.URLObject{URL: server.URL}
+	bs, err := easyjson.Marshal(urlObject)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest("POST", "/api/load_from_url", bytes.NewBuffer(bs))
+	res := httptest.NewRecorder()
+	h := processor.MethodMiddleware(processor.HandleLoadFromURL, "POST")
+	h(res, req)
+
+	if res.Code != http.StatusInternalServerError {
+		t.Errorf("got status %d but wanted %d", res.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestHandleLoadFromURLResourceWithoutFileButRightContentType(t *testing.T) {
+	server := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Content-Length", strconv.Itoa(32<<20+1))
+		}),
 	)
 	defer server.Close()
 
