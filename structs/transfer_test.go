@@ -58,6 +58,60 @@ func TestUnmarshalSearchObject(t *testing.T) {
 	}
 }
 
+func TestUnmarshalSearchObjectNotNilAll(t *testing.T) {
+	globalID := 3
+	systemObjectID := "90"
+	id := 42
+	idEn := 43
+	mode := ""
+	modeEn := "a"
+	searchObj := SearchObject{
+		GlobalID:       &globalID,
+		SystemObjectID: &systemObjectID,
+		ID:             &id,
+		IDEn:           &idEn,
+		Mode:           &mode,
+		ModeEn:         &modeEn,
+	}
+	bs, err := easyjson.Marshal(searchObj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var newSearchObj SearchObject
+	err = easyjson.Unmarshal(bs, &newSearchObj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *searchObj.SystemObjectID != *newSearchObj.SystemObjectID {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if *searchObj.GlobalID != *newSearchObj.GlobalID {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if *searchObj.ID != *newSearchObj.ID {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if *searchObj.IDEn != *newSearchObj.IDEn {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if *searchObj.Mode != *newSearchObj.Mode {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if *searchObj.ModeEn != *newSearchObj.ModeEn {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+	if searchObj.Offset != newSearchObj.Offset {
+		t.Errorf("searchObj != newSearchObj ; searchObj: %v, newSearchObj: %v",
+			searchObj, newSearchObj)
+	}
+}
+
 func TestUnmarshalPaginationObject(t *testing.T) {
 	paginationObject := PaginationObject{}
 	bs, err := easyjson.Marshal(paginationObject)
