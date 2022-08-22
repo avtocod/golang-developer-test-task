@@ -9,6 +9,7 @@ import (
 // RedisClient is for wrapping original redis.Client
 type RedisClient struct {
 	redis.Client
+	MaxRetries int
 }
 
 // NewRedisClient is constructor for RedisClient
@@ -23,5 +24,6 @@ func NewRedisClient(ctx context.Context, config RedisConfig) *RedisClient {
 	if _, err := client.Ping(ctx).Result(); err != nil {
 		panic(err)
 	}
-	return &RedisClient{*client}
+	maxRetries := 10
+	return &RedisClient{Client: *client, MaxRetries: maxRetries}
 }

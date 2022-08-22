@@ -22,7 +22,7 @@ import (
 
 func TestHandleMainPage(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -43,7 +43,7 @@ func TestHandleMainPage(t *testing.T) {
 
 func TestHandleMainPageBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -64,7 +64,7 @@ func TestHandleMainPageBadRequest(t *testing.T) {
 
 func TestHandleSearchBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -118,7 +118,7 @@ func TestHandleSearchMode(t *testing.T) {
 	mock.ExpectLRange(mode, 0, paginationSize).SetVal([]string{info.SystemObjectID})
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -203,7 +203,7 @@ func TestHandleSearchModeEn(t *testing.T) {
 	mock.ExpectLRange(modeEn, 0, paginationSize).SetVal([]string{info.SystemObjectID})
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -286,7 +286,7 @@ func TestHandleSearchID(t *testing.T) {
 	mock.ExpectGet(id).SetVal(info.SystemObjectID)
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -369,7 +369,7 @@ func TestHandleSearchIDEn(t *testing.T) {
 	mock.ExpectGet(idEn).SetVal(info.SystemObjectID)
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -451,7 +451,7 @@ func TestHandleSearchSystemObjectID(t *testing.T) {
 
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -534,7 +534,7 @@ func TestHandleSearchGlobalID(t *testing.T) {
 	mock.ExpectGet(globalID).SetVal(info.SystemObjectID)
 	mock.ExpectGet(info.SystemObjectID).SetVal(string(bs))
 
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 	err := client.AddValue(context.Background(), info)
 	if err != nil {
 		t.Fatal(err)
@@ -595,7 +595,7 @@ func TestHandleSearchErrDuringSearch(t *testing.T) {
 	}
 
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -621,7 +621,7 @@ func TestHandleSearchErrDuringSearch(t *testing.T) {
 
 func TestHandleLoadFromURLBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -647,7 +647,7 @@ func TestHandleLoadFromURLResourceWithoutFile(t *testing.T) {
 	defer server.Close()
 
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -682,7 +682,7 @@ func TestHandleLoadFromURLResourceWithoutFileButRightContentType(t *testing.T) {
 	defer server.Close()
 
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -709,7 +709,7 @@ func TestHandleLoadFromURLResourceWithoutFileButRightContentType(t *testing.T) {
 
 func TestHandleLoadFromURLWrongResource(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -736,7 +736,7 @@ func TestHandleLoadFromURLWrongResource(t *testing.T) {
 
 func TestHandleLoadFromURLWrongURLResource(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -763,7 +763,7 @@ func TestHandleLoadFromURLWrongURLResource(t *testing.T) {
 
 func TestHandleLoadFromURLNilBody(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -785,7 +785,7 @@ func TestHandleLoadFromURLNilBody(t *testing.T) {
 // func TestHandleLoadFromURLGoodURLWithErrorDueAdding(t *testing.T) {
 //	db, _ := redismock.NewClientMock()
 //	// TODO: add data to mock before it
-//	client := &redclient.RedisClient{*db}
+//  client := &redclient.RedisClient{*db, 10}
 //
 //	logger, _ := zap.NewProduction()
 //	defer func() {
@@ -813,7 +813,7 @@ func TestHandleLoadFromURLNilBody(t *testing.T) {
 
 func TestHandleLoadFileBadRequest(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -834,7 +834,7 @@ func TestHandleLoadFileBadRequest(t *testing.T) {
 
 func TestHandleLoadFromURLWrongMethod(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -854,7 +854,7 @@ func TestHandleLoadFromURLWrongMethod(t *testing.T) {
 
 func TestHandleLoadFileWrongMethod(t *testing.T) {
 	db, _ := redismock.NewClientMock()
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -875,7 +875,7 @@ func TestHandleLoadFileWrongMethod(t *testing.T) {
 func TestHandleLoadFile(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -922,7 +922,7 @@ func TestHandleLoadFile(t *testing.T) {
 func TestHandleLoadFileWithParenthesisProblem(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -969,7 +969,7 @@ func TestHandleLoadFileWithParenthesisProblem(t *testing.T) {
 func TestHandleSearchWithoutNilSearchObject(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -993,7 +993,7 @@ func TestHandleSearchWithoutNilSearchObject(t *testing.T) {
 func TestHandleSearchWithoutNecessaryParamsInsideSearchObject(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
@@ -1020,7 +1020,7 @@ func TestHandleSearchWithoutNecessaryParamsInsideSearchObject(t *testing.T) {
 func TestHandleLoadFileWrongFileName(t *testing.T) {
 	db, _ := redismock.NewClientMock()
 	// TODO: add data to mock before it
-	client := &redclient.RedisClient{*db}
+	client := &redclient.RedisClient{*db, 10}
 
 	logger, _ := zap.NewProduction()
 	defer func() {
