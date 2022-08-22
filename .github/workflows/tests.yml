@@ -59,8 +59,8 @@ jobs:
       - name: Run Unit tests
         run: go test -v -race -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
 
-      - name: Clean from easyjson
-        run: cat coverage.out | grep -v "_easyjson.go" > cover.out
+      - name: Clean test coverage
+        run: cat coverage.out | grep -v -e "_easyjson.go" -e "main.go" > cover.out
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
