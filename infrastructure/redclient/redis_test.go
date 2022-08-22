@@ -12,6 +12,64 @@ import (
 	"github.com/go-redis/redismock/v8"
 )
 
+func TestRedisConfigLoad(t *testing.T) {
+	t.Setenv("Addr", "a")
+	t.Setenv("Password", "b")
+	t.Setenv("DB", "0")
+	config := RedisConfig{}
+	config.Load()
+}
+
+func TestRedisConfigLoadPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("the code did not panic")
+		}
+	}()
+
+	t.Setenv("Addr", "a")
+	t.Setenv("Password", "b")
+	// t.Setenv("DB", "0")
+	config := RedisConfig{}
+	config.Load()
+}
+
+func TestRedisConfigLoadPanicConvertDBToInt(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("the code did not panic")
+		}
+	}()
+
+	t.Setenv("Addr", "a")
+	t.Setenv("Password", "b")
+	t.Setenv("DB", "abracadabra")
+	config := RedisConfig{}
+	config.Load()
+}
+
+func TestNewRedisClientPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("the code did not panic")
+		}
+	}()
+
+	config := RedisConfig{Addr: ":", Password: "", DB: 0}
+	_ = NewRedisClient(context.Background(), config)
+}
+
+func TestNewRedisClient(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("the code did not panic")
+		}
+	}()
+
+	config := RedisConfig{Addr: ":", Password: "", DB: 0}
+	_ = NewRedisClient(context.Background(), config)
+}
+
 func TestAddValue(t *testing.T) {
 	info := structs.Info{
 		GlobalID:       42,
